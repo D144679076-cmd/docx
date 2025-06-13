@@ -202,15 +202,11 @@ describe("from-docx", () => {
     describe("patchDocument", () => {
         describe("document.xml and [Content_Types].xml", () => {
             beforeEach(() => {
-                vi.spyOn(JSZip, "loadAsync").mockReturnValue(
-                    new Promise<JSZip>((resolve) => {
-                        const zip = new JSZip();
+                const zip = new JSZip();
 
-                        zip.file("word/document.xml", MOCK_XML);
-                        zip.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`);
-                        resolve(zip);
-                    }),
-                );
+                zip.file("word/document.xml", MOCK_XML);
+                zip.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`);
+                vi.spyOn(JSZip, "loadAsync").mockResolvedValue(zip);
             });
 
             afterEach(() => {
@@ -287,6 +283,127 @@ describe("from-docx", () => {
                     patches: {},
                 });
                 expect(output).to.not.be.undefined;
+            });
+
+            it("should work with the raw JSZip type", async () => {
+                const zip = new JSZip();
+
+                zip.file("word/document.xml", MOCK_XML);
+                zip.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`);
+                const output = await patchDocument({
+                    outputType: "uint8array",
+                    data: zip,
+                    patches: {},
+                });
+                expect(output).to.not.be.undefined;
+            });
+
+            it("should skiup UTF-16 types", async () => {
+                const zip = new JSZip();
+
+                zip.file("word/document.xml", MOCK_XML);
+                zip.file("[Content_Types].xml", Buffer.from([0xff, 0xfe]));
+                const output = await patchDocument({
+                    outputType: "uint8array",
+                    data: zip,
+                    patches: {},
+                });
+                expect(output).to.not.be.undefined;
+            });
+
+            it("should patch the document", async () => {
+                const output = await patchDocument({
+                    outputType: "uint8array",
+                    data: Buffer.from(""),
+                    placeholderDelimiters: { start: "{{", end: "}}" },
+                    patches: {
+                        name: {
+                            type: PatchType.PARAGRAPH,
+                            children: [new TextRun("Sir. "), new TextRun("John Doe"), new TextRun("(The Conqueror)")],
+                        },
+                        item_1: {
+                            type: PatchType.PARAGRAPH,
+                            children: [
+                                new TextRun("#657"),
+                                new ExternalHyperlink({
+                                    children: [
+                                        new TextRun({
+                                            text: "BBC News Link",
+                                        }),
+                                    ],
+                                    link: "https://www.bbc.co.uk/news",
+                                }),
+                            ],
+                        },
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        paragraph_replace: {
+                            type: PatchType.DOCUMENT,
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new TextRun("This is a "),
+                                        new ExternalHyperlink({
+                                            children: [
+                                                new TextRun({
+                                                    text: "Google Link",
+                                                }),
+                                            ],
+                                            link: "https://www.google.co.uk",
+                                        }),
+                                        new ImageRun({
+                                            type: "png",
+                                            data: Buffer.from(""),
+                                            transformation: { width: 100, height: 100 },
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        },
+                        // eslint-disable-next-line @typescript-eslint/naming-convention
+                        image_test: {
+                            type: PatchType.PARAGRAPH,
+                            children: [
+                                new ImageRun({
+                                    type: "png",
+                                    data: Buffer.from(""),
+                                    transformation: { width: 100, height: 100 },
+                                }),
+                            ],
+                        },
+                    },
+                });
+                expect(output).to.not.be.undefined;
+            });
+
+            it("should patch the document", async () => {
+                const output = await patchDocument({
+                    outputType: "uint8array",
+                    data: Buffer.from(""),
+                    patches: {},
+                });
+                expect(output).to.not.be.undefined;
+            });
+
+            it("throws error with empty delimiters", async () => {
+                await expect(() =>
+                    patchDocument({
+                        outputType: "uint8array",
+                        data: Buffer.from(""),
+                        patches: {},
+                        placeholderDelimiters: { start: "", end: "" },
+                    }),
+                ).rejects.toThrow();
+            });
+
+            it("throws error with whitespace-only delimiters", async () => {
+                await expect(() =>
+                    patchDocument({
+                        outputType: "uint8array",
+                        data: Buffer.from(""),
+                        patches: {},
+                        placeholderDelimiters: { start: " ", end: " " },
+                    }),
+                ).rejects.toThrowError();
             });
         });
 

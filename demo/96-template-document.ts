@@ -1,11 +1,103 @@
-// Example of how you would create a table and add data to it
+// Patch a document with patches
 
 import * as fs from "fs";
-import { Document, HeadingLevel, Packer, Paragraph, Table, TableCell, TableRow, VerticalAlignTable, TextDirection } from "docx";
+import {
+    ExternalHyperlink,
+    HeadingLevel,
+    ImageRun,
+    Paragraph,
+    patchDocument,
+    PatchType,
+    Table,
+    TableCell,
+    TableRow,
+    TextDirection,
+    TextRun,
+    VerticalAlignTable,
+} from "docx";
 
-const doc = new Document({
-    sections: [
-        {
+patchDocument({
+    outputType: "nodebuffer",
+    data: fs.readFileSync("demo/assets/simple-template-4.docx"),
+    patches: {
+        name: {
+            type: PatchType.PARAGRAPH,
+            children: [new TextRun("Sir. "), new TextRun("John Doe"), new TextRun("(The Conqueror)")],
+        },
+        table_heading_1: {
+            type: PatchType.PARAGRAPH,
+            children: [new TextRun("Heading wow!")],
+        },
+        item_1: {
+            type: PatchType.PARAGRAPH,
+            children: [
+                new TextRun("#657"),
+                new ExternalHyperlink({
+                    children: [
+                        new TextRun({
+                            text: "BBC News Link",
+                        }),
+                    ],
+                    link: "https://www.bbc.co.uk/news",
+                }),
+            ],
+        },
+        paragraph_replace: {
+            type: PatchType.DOCUMENT,
+            children: [
+                new Paragraph("Lorem ipsum paragraph"),
+                new Paragraph("Another paragraph"),
+                new Paragraph({
+                    children: [
+                        new TextRun("This is a "),
+                        new ExternalHyperlink({
+                            children: [
+                                new TextRun({
+                                    text: "Google Link",
+                                }),
+                            ],
+                            link: "https://www.google.co.uk",
+                        }),
+                        new ImageRun({
+                            type: "png",
+                            data: fs.readFileSync("./demo/images/dog.png"),
+                            transformation: { width: 100, height: 100 },
+                        }),
+                    ],
+                }),
+            ],
+        },
+        header_adjective: {
+            type: PatchType.PARAGRAPH,
+            children: [new TextRun("Delightful Header")],
+        },
+        footer_text: {
+            type: PatchType.PARAGRAPH,
+            children: [
+                new TextRun("replaced just as"),
+                new TextRun(" well"),
+                new ExternalHyperlink({
+                    children: [
+                        new TextRun({
+                            text: "BBC News Link",
+                        }),
+                    ],
+                    link: "https://www.bbc.co.uk/news",
+                }),
+            ],
+        },
+        image_test: {
+            type: PatchType.PARAGRAPH,
+            children: [
+                new ImageRun({
+                    type: "jpg",
+                    data: fs.readFileSync("./demo/images/image1.jpeg"),
+                    transformation: { width: 100, height: 100 },
+                }),
+            ],
+        },
+        table: {
+            type: PatchType.DOCUMENT,
             children: [
                 new Table({
                     rows: [
@@ -69,9 +161,8 @@ const doc = new Document({
                 }),
             ],
         },
-    ],
-});
-
-Packer.toBuffer(doc).then((buffer) => {
-    fs.writeFileSync("My Document.docx", buffer);
+    },
+    placeholderDelimiters: { start: "<<", end: ">>" },
+}).then((doc) => {
+    fs.writeFileSync("My Document.docx", doc);
 });

@@ -19,7 +19,7 @@ import { replacer } from "./replacer";
 import { toJson } from "./util";
 
 // eslint-disable-next-line functional/prefer-readonly-type
-export type InputDataType = Buffer | string | number[] | Uint8Array | ArrayBuffer | Blob | NodeJS.ReadableStream;
+export type InputDataType = Buffer | string | number[] | Uint8Array | ArrayBuffer | Blob | NodeJS.ReadableStream | JSZip;
 
 export const PatchType = {
     DOCUMENT: "file",
@@ -55,17 +55,41 @@ export type PatchDocumentOptions<T extends PatchDocumentOutputType = PatchDocume
     readonly data: InputDataType;
     readonly patches: Readonly<Record<string, IPatch>>;
     readonly keepOriginalStyles?: boolean;
+    readonly placeholderDelimiters?: Readonly<{
+        readonly start: string;
+        readonly end: string;
+    }>;
+    readonly recursive?: boolean;
 };
 
 const imageReplacer = new ImageReplacer();
+const UTF16LE = new Uint8Array([0xff, 0xfe]);
+const UTF16BE = new Uint8Array([0xfe, 0xff]);
+
+const compareByteArrays = (a: Uint8Array, b: Uint8Array): boolean => {
+    if (a.length !== b.length) {
+        return false;
+    }
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) {
+            return false;
+        }
+    }
+    return true;
+};
 
 export const patchDocument = async <T extends PatchDocumentOutputType = PatchDocumentOutputType>({
     outputType,
     data,
     patches,
     keepOriginalStyles,
+    placeholderDelimiters = { start: "{{", end: "}}" } as const,
+    /**
+     * Search for occurrences over patched document
+     */
+    recursive = true,
 }: PatchDocumentOptions<T>): Promise<OutputByType[T]> => {
-    const zipContent = await JSZip.loadAsync(data);
+    const zipContent = data instanceof JSZip ? data : await JSZip.loadAsync(data);
     const contexts = new Map<string, IContext>();
     const file = {
         Media: new Media(),
@@ -82,8 +106,15 @@ export const patchDocument = async <T extends PatchDocumentOutputType = PatchDoc
     const binaryContentMap = new Map<string, Uint8Array>();
 
     for (const [key, value] of Object.entries(zipContent.files)) {
+        const binaryValue = await value.async("uint8array");
+        const startBytes = binaryValue.slice(0, 2);
+        if (compareByteArrays(startBytes, UTF16LE) || compareByteArrays(startBytes, UTF16BE)) {
+            binaryContentMap.set(key, binaryValue);
+            continue;
+        }
+
         if (!key.endsWith(".xml") && !key.endsWith(".rels")) {
-            binaryContentMap.set(key, await value.async("uint8array"));
+            binaryContentMap.set(key, binaryValue);
             continue;
         }
 
@@ -91,12 +122,10 @@ export const patchDocument = async <T extends PatchDocumentOutputType = PatchDoc
 
         if (key === "word/document.xml") {
             const document = json.elements?.find((i) => i.name === "w:document");
-            if (document) {
+            if (document && document.attributes) {
                 // We could check all namespaces from Document, but we'll instead
                 // check only those that may be used by our element types.
 
-                // eslint-disable-next-line functional/immutable-data
-                document.attributes = document.attributes ?? {};
                 for (const ns of ["mc", "wp", "r", "w15", "m"] as const) {
                     // eslint-disable-next-line functional/immutable-data
                     document.attributes[`xmlns:${ns}`] = DocumentAttributeNamespaces[ns];
@@ -132,8 +161,14 @@ export const patchDocument = async <T extends PatchDocumentOutputType = PatchDoc
             };
             contexts.set(key, context);
 
+            if (!placeholderDelimiters?.start.trim() || !placeholderDelimiters?.end.trim()) {
+                throw new Error("Both start and end delimiters must be non-empty strings.");
+            }
+
+            const { start, end } = placeholderDelimiters;
+
             for (const [patchKey, patchValue] of Object.entries(patches)) {
-                const patchText = `{{${patchKey}}}`;
+                const patchText = `${start}${patchKey}${end}`;
                 // TODO: mutates json. Make it immutable
                 // We need to loop through to catch every occurrence of the patch text
                 // It is possible that the patch text is in the same run
@@ -168,7 +203,8 @@ export const patchDocument = async <T extends PatchDocumentOutputType = PatchDoc
                         context,
                         keepOriginalStyles,
                     });
-                    if (!didFindOccurrence) {
+                    // What the reason doing that? Once document is patched - it search over patched json again, that takes too long if patched document has big and deep structure.
+                    if (!recursive || !didFindOccurrence) {
                         break;
                     }
                 }
@@ -264,7 +300,15 @@ export const patchDocument = async <T extends PatchDocumentOutputType = PatchDoc
 };
 
 const toXml = (jsonObj: Element): string => {
-    const output = js2xml(jsonObj);
+    const output = js2xml(jsonObj, {
+        attributeValueFn: (str) =>
+            String(str)
+                .replace(/&(?!amp;|lt;|gt;|quot;|apos;)/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&apos;"), // cspell:words apos
+    });
     return output;
 };
 

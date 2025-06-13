@@ -1,7 +1,7 @@
 // https://www.datypic.com/sc/ooxml/e-m_barPr-1.html
-import { XmlComponent } from "@file/xml-components";
+import { BuilderElement, XmlComponent } from "@file/xml-components";
 
-import { MathBarPos } from "./math-bar-pos";
+import { createMathBarPos } from "./math-bar-pos";
 
 export class MathBarProperties extends XmlComponent {
     public constructor(type: string) {
