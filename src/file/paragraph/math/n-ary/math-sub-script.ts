@@ -10,5 +10,5 @@ type MathSubScriptElementOptions = {
 export const createMathSubScriptElement = ({ children }: MathSubScriptElementOptions): XmlComponent =>
     new BuilderElement({
         name: "m:sub",
-        children,
+        children: children as readonly XmlComponent[],
     });
