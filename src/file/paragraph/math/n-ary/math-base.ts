@@ -10,5 +10,5 @@ type MathBaseOptions = {
 export const createMathBase = ({ children }: MathBaseOptions): XmlComponent =>
     new BuilderElement({
         name: "m:e",
-        children: children as readonly XmlComponent[],
+        children: children,
     });

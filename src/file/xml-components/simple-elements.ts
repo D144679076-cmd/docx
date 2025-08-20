@@ -1,3 +1,4 @@
+import { RawComponent } from "@file/raw-component";
 import { AttributeData, AttributePayload, Attributes, NextAttributeComponent, XmlComponent } from "@file/xml-components";
 import { PositiveUniversalMeasure, hpsMeasureValue } from "@util/values";
 
@@ -97,7 +98,7 @@ export class BuilderElement<T extends AttributeData = {}> extends XmlComponent {
     }: {
         readonly name: string;
         readonly attributes?: AttributePayload<T>;
-        readonly children?: readonly XmlComponent[];
+        readonly children?: readonly (XmlComponent | RawComponent)[];
     }) {
         super(name);
 
