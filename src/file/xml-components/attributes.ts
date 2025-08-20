@@ -21,7 +21,7 @@ export class Attributes extends XmlAttributeComponent<{
     readonly gutter?: string;
     readonly linePitch?: string;
     readonly pos?: string | number; // Little strange. Perhaps it is normal. Need to clarify in the spec.
-    readonly mVal? : string | number;
+    readonly mVal?: string | number;
 }> {
     protected readonly xmlKeys = {
         val: "w:val",
@@ -44,6 +44,6 @@ export class Attributes extends XmlAttributeComponent<{
         gutter: "w:gutter",
         linePitch: "w:linePitch",
         pos: "w:pos",
-        mVal:'m:val'
+        mVal: "m:val",
     };
 }

@@ -1,6 +1,6 @@
 import { IContext, IXmlableObject } from "@file/xml-components";
 
-export abstract  class BaseRawComponent {
+export abstract class BaseRawComponent {
     protected readonly xmlString: string;
     public constructor(xmlString: string) {
         this.xmlString = xmlString;
