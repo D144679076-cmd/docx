@@ -1,3 +1,5 @@
+import { BaseRawComponent } from "@file/raw-component/base";
+
 import { BaseXmlComponent, IContext } from "./base";
 import { IXmlableObject } from "./xmlable-object";
 
@@ -5,11 +7,11 @@ export const EMPTY_OBJECT = Object.seal({});
 
 export abstract class XmlComponent extends BaseXmlComponent {
     // eslint-disable-next-line functional/prefer-readonly-type, @typescript-eslint/no-explicit-any
-    protected root: (BaseXmlComponent | string | any)[];
+    protected root: (BaseXmlComponent| BaseRawComponent | string | any)[];
 
     public constructor(rootKey: string) {
         super(rootKey);
-        this.root = new Array<BaseXmlComponent | string>();
+        this.root = new Array<BaseXmlComponent| BaseRawComponent | string>();
     }
 
     // This method is called by the formatter to get the XML representation of this component.

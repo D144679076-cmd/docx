@@ -1,7 +1,8 @@
+import { BaseRawComponent } from "@file/raw-component/base";
 import { BaseXmlComponent, IContext, IXmlableObject } from "@file/xml-components";
 
 export class Formatter {
-    public format(input: BaseXmlComponent, context: IContext = { stack: [] } as unknown as IContext): IXmlableObject {
+    public format(input: BaseXmlComponent | BaseRawComponent, context: IContext = { stack: [] } as unknown as IContext): IXmlableObject {
         const output = input.prepForXml(context);
 
         if (output) {
