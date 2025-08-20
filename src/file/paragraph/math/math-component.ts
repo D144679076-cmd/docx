@@ -9,23 +9,22 @@ import { MathIntegral, MathSum } from "./n-ary";
 import { MathRadical } from "./radical";
 import { MathSubScript, MathSubSuperScript, MathSuperScript } from "./script";
 
-export type MathComponent = XmlComponent &
-    (
-        | MathRun
-        | MathFraction
-        | MathSum
-        | MathIntegral
-        | MathSuperScript
-        | MathSubScript
-        | MathSubSuperScript
-        | MathRadical
-        | MathFunction
-        | MathRoundBrackets
-        | MathCurlyBrackets
-        | MathAngledBrackets
-        | MathSquareBrackets
-        | MathRaw
-    );
+export type MathComponent =
+    | XmlComponent
+    | MathRun
+    | MathFraction
+    | MathSum
+    | MathIntegral
+    | MathSuperScript
+    | MathSubScript
+    | MathSubSuperScript
+    | MathRadical
+    | MathFunction
+    | MathRoundBrackets
+    | MathCurlyBrackets
+    | MathAngledBrackets
+    | MathSquareBrackets
+    | MathRaw;
 
 // Needed because of: https://github.com/s-panferov/awesome-typescript-loader/issues/432
 /**
