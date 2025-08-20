@@ -8,3 +8,4 @@ export * from "./radical";
 export * from "./function";
 export * from "./brackets";
 export * from "./bar";
+export * from "./math-raw";
