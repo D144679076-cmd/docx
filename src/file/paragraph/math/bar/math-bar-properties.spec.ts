@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import { Formatter } from "@export/formatter";
 
-import { createMathBarProperties } from "./math-bar-properties";
+import { MathBarProperties } from "./math-bar-properties";
 
 describe("MathBarProperties", () => {
     describe("#constructor()", () => {
         it("should create a MathBarProperties with top key", () => {
-            const mathBarProperties = createMathBarProperties({ type: "top" });
+            const mathBarProperties = new MathBarProperties("top");
 
             const tree = new Formatter().format(mathBarProperties);
 
@@ -16,7 +16,7 @@ describe("MathBarProperties", () => {
                     {
                         "m:pos": {
                             _attr: {
-                                "m:val": "top",
+                                "w:val": "top",
                             },
                         },
                     },
@@ -24,7 +24,7 @@ describe("MathBarProperties", () => {
             });
         });
         it("should create a MathBarProperties with bottom key", () => {
-            const mathBarProperties = createMathBarProperties({ type: "bot" });
+            const mathBarProperties = new MathBarProperties("bot");
 
             const tree = new Formatter().format(mathBarProperties);
 
@@ -33,7 +33,7 @@ describe("MathBarProperties", () => {
                     {
                         "m:pos": {
                             _attr: {
-                                "m:val": "bot",
+                                "w:val": "bot",
                             },
                         },
                     },

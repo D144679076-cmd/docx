@@ -3,7 +3,7 @@ import { BuilderElement, XmlComponent } from "@file/xml-components";
 
 import type { MathComponent } from "../math-component";
 import { createMathBase } from "../n-ary";
-import { createMathBarProperties } from "./math-bar-properties";
+import { MathBarProperties } from "./math-bar-properties";
 
 type MathBarOptions = {
     readonly type: "top" | "bot";
@@ -13,5 +13,5 @@ type MathBarOptions = {
 export const createMathBar = ({ type, children }: MathBarOptions): XmlComponent =>
     new BuilderElement({
         name: "m:bar",
-        children: [createMathBarProperties({ type }), createMathBase({ children })],
+        children: [new MathBarProperties(type), createMathBase({ children })],
     });
