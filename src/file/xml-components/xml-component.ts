@@ -28,6 +28,9 @@ export abstract class XmlComponent extends BaseXmlComponent {
                 if (comp instanceof BaseXmlComponent) {
                     return comp.prepForXml(context);
                 }
+                if (comp instanceof BaseRawComponent) {
+                    return comp.prepForXml(context);
+                }
                 return comp;
             })
             .filter((comp) => comp !== undefined); // Exclude undefined
