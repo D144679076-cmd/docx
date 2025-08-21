@@ -23,7 +23,7 @@ import {
     TextRun,
     MathLimitLower,
     MathLimitUpper,
-    MathRaw
+    MathRaw,
 } from "docx-math-extension";
 
 const doc = new Document({
@@ -337,10 +337,12 @@ const doc = new Document({
                     ],
                 }),
                 new Paragraph({
-                    children:[new Math({
-                        children:[new MathRun('test math raw'),new MathRaw(`<m:oMath><m:r><m:t>1+1=2</m:t></m:r></m:oMath>`)]
-                    })]
-                })
+                    children: [
+                        new Math({
+                            children: [new MathRun("test math raw"), new MathRaw(`<m:oMath><m:r><m:t>1+1=2</m:t></m:r></m:oMath>`)],
+                        }),
+                    ],
+                }),
             ],
         },
     ],
