@@ -1,3 +1,4 @@
+import { RawComponent } from "@file/raw-component";
 import { BaseRawComponent } from "@file/raw-component/base";
 
 import { BaseXmlComponent, IContext } from "./base";
@@ -28,7 +29,7 @@ export abstract class XmlComponent extends BaseXmlComponent {
                 if (comp instanceof BaseXmlComponent) {
                     return comp.prepForXml(context);
                 }
-                if (comp instanceof BaseRawComponent) {
+                if (comp instanceof BaseRawComponent || comp instanceof RawComponent) {
                     return comp.prepForXml(context);
                 }
                 return comp;

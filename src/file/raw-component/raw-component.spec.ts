@@ -16,13 +16,11 @@ describe("RawComponent", () => {
             const component = new TestComponent("<w:p><w:r><w:t>Hello, world!</w:t></w:r></w:p>");
             const tree = new Formatter().format(component);
             expect(tree).to.deep.equal({
-                "w:p": {
-                    "w:r": {
-                        "w:t": {
-                            _text: "Hello, world!",
-                        },
-                    },
-                },
+                "w:p": [{
+                    "w:r": [{
+                        "w:t": ["Hello, world!"],
+                    }],
+                }],
             });
         });
     });
