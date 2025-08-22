@@ -26,7 +26,8 @@ export const convertToXmlComponent = (element: Element): IXmlableObject | string
                     [element.name]: temp.filter((childEle) => !!childEle).length > 0 ? temp.filter((childEle) => !!childEle) : {},
                 };
             } else {
-                returnObject = temp.filter((childEle) => !!childEle).length > 0 ? temp.filter((childEle) => !!childEle)?.[0] as IXmlableObject : {};
+                returnObject =
+                    temp.filter((childEle) => !!childEle).length > 0 ? (temp.filter((childEle) => !!childEle)?.[0] as IXmlableObject) : {};
             }
             return returnObject;
         }
